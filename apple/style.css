@@ -1,0 +1,74 @@
+@font-face {
+    font-family: "jua";
+    src: url('BMJUA_ttf.ttf');
+}
+
+#title{
+    font-family: "jua";
+}
+
+body { 
+    margin: 0; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    background: #f0f0f0;
+    font-family: "jua";
+}
+
+#container{
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: center;
+}
+
+#info {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    /* width: 850px; 캔버스 너비에 맞춤 */
+    font-size: 18px;
+}
+
+#info > div {
+    text-align: center;
+}
+
+canvas { 
+    display: block; 
+    background: #ffffff; 
+    /* border: 2px solid #000;
+    border-radius: 12px; */
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+}
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+    z-index: 10; /* 캔버스 위로 배치 */
+}
+#overlay button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 20px;
+    cursor: pointer;
+    font-family: "jua";
+}
+#overlay > .container {
+    display: flex;
+    flex-direction: column;
+}
+#overlayMessage {
+    text-align: center;
+}

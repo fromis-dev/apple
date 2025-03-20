@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Mouse Drag</title>
+    <style>
+        body { 
+            margin: 0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background: #f0f0f0;
+        }
+        #header {
+            text-align: center;
+            margin: 10px 0;
+        }
+        #info {
+            display: flex;
+            justify-content: flex-end;
+            width: 850px; /* 캔버스 너비에 맞춤 */
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        canvas { 
+            display: block; 
+            background: #ffffff; 
+            border: 2px solid #000;
+            border-radius: 12px;
+        }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            z-index: 10; /* 캔버스 위로 배치 */
+        }
+        #overlay button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #overlay > .container {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>Apple Game</h1>
+    </div>
+    <div id="info">
+        <span id="timer">Time: 2:00</span>
+        &nbsp;&nbsp;&nbsp;
+        <span id="score">Score: 0</span>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="overlay">
+        <div class="container">
+            <h2 id="overlayMessage">Apple Game</h2>
+            <button onclick="startGame()">Start Game</button>
+        </div>
+    </div>    
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rows = 10;
+  const cols = 17;
+  const squareSize = 50;
+  const padding = squareSize;
+
+  canvas.width = cols * squareSize + padding * 2;
+  canvas.height = rows * squareSize + padding * 2;
+
+  const offsetX = padding;
+  const offsetY = padding;
+
+  // Square 객체 정의
+  class Square {
+    constructor(x, y, size) {
+      this.x = x;
+      this.y = y;
+      this.size = size;
+      this.value = Math.floor(Math.random() * 9) + 1; // 1부터 9까지의 정수
+      this.active = true;
+    }
+
+    getCenter() {
+      return { cx: this.x + this.size / 2, cy: this.y + this.size / 2 };
+    }
+
+    draw(color = "#fff") {
+      ctx.fillStyle = color;
+      ctx.fillRect(this.x, this.y, this.size, this.size);
+      ctx.strokeStyle = "#000";
+      ctx.strokeRect(this.x, this.y, this.size, this.size);
+      if (this.active) {
+        ctx.fillStyle = "#000";
+        ctx.font = `${this.size / 2}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.value, this.x + this.size / 2, this.y + this.size / 2);
+      }
+    }
+  }
+
+  // 2차원 배열 생성 및 초기화
+  const grid = Array.from({ length: rows }, (_, row) =>
+    Array.from({ length: cols }, (_, col) =>
+      new Square(offsetX + col * squareSize, offsetY + row * squareSize, squareSize)
+    )
+  );
+
+  // 그리드 그리기
+  function drawGrid(selectedSquares = [], color = "#fff") {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    grid.forEach(row => row.forEach(square => {
+      const isSelected = selectedSquares.includes(square);
+      square.draw(isSelected ? color : "#fff");
+    }));
+  }
+
+  function updateScore() {
+    const score = grid.flat().filter(square => !square.active).length;
+    document.getElementById("score").textContent = `Score: ${score}`;
+  }
+
+  drawGrid();
+  updateScore();
+
+  // 타이머 기능 추가
+  let timeLeft = 120; // 2분
+  function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById("timer").textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    if (timeLeft > 0) {
+      timeLeft--;
+      setTimeout(updateTimer, 1000);
+    }
+  }
+  updateTimer();
+
+  // 드래그 기능 추가
+  let isDragging = false;
+  let startX, startY, currentX, currentY;
+  let selectedSquares = [];
+
+  canvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startX = e.clientX - canvas.getBoundingClientRect().left;
+    startY = e.clientY - canvas.getBoundingClientRect().top;
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      currentX = e.clientX - canvas.getBoundingClientRect().left;
+      currentY = e.clientY - canvas.getBoundingClientRect().top;
+
+      const minX = Math.min(startX, currentX);
+      const maxX = Math.max(startX, currentX);
+      const minY = Math.min(startY, currentY);
+      const maxY = Math.max(startY, currentY);
+
+      let sum = 0;
+      selectedSquares = [];
+      grid.forEach(row => row.forEach(square => {
+        const { cx, cy } = square.getCenter();
+        if (cx >= minX && cx <= maxX && cy >= minY && cy <= maxY && square.active) {
+          selectedSquares.push(square);
+          sum += square.value;
+        }
+      }));
+
+      const color = sum === 10 ? '#b0e57c' : '#ddd';
+      drawGrid(selectedSquares, color);
+
+      // 드래그 영역을 최상단에 그림
+      ctx.strokeStyle = 'grey';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(startX, startY, currentX - startX, currentY - startY);
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+    let sum = selectedSquares.reduce((acc, square) => acc + square.value, 0);
+    if (sum === 10) {
+      selectedSquares.forEach(square => square.active = false);
+      updateScore();
+    }
+    drawGrid();
+  });
+</script>
+</body>
+</html>

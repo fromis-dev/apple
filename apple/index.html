@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">    
+    <link rel="stylesheet" href="style.css">
+    <title>apple</title>
+</head>
+<body>
+    <div id="container">
+        <div id="info">
+            <div id="timer">Time: 2:00</div>
+            <div id="score">Score: 0</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    <div id="overlay">
+        <div class="container">
+            <h2 id="overlayMessage">Apple Game</h2>
+            <button onclick="startGame()">Start Game</button>
+            <button onclick="copyGameUrl()">Share Game</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>        
+</body>
+</html>
